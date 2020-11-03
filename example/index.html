@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../dist/MVVM.js"></script>
+</head>
+<body>
+    <div id="app" :a="11" b="2" m-html="">
+        <test m-model="num">
+            <strong></strong>
+            <span></span>
+            <input m-model="num" :type="type">
+        </test>
+    </div>
+    <script>
+        let vm = new MVVM({
+            el:'#app',
+            data:{
+                name:'zzy',
+                obj:{
+                    name:'gyy',
+                    obj2:{
+                        name:'zzy'
+                    }
+
+                },
+                list:[1,2,{name:'zzy'},4,5],
+                type:'radio'
+            },
+            computed:{
+                all(){
+                    return this.name + this.obj.name;
+                }
+            },
+            methods:{
+                getSome(a){
+                    console.log(this.name + a);
+                }
+            }
+        })
+        let obj = {
+
+        }
+        console.log(obj.name != null)
+
+
+
+        
+    </script>
+    
+</body>
+</html>
