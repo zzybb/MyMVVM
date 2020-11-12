@@ -1,17 +1,26 @@
 import { Watcher } from "./core/observer/watcher";
-import { initData,initComputed,initMethods } from "./core"
-import { isValidArrayIndex,query,getOuterHTML } from './shared/util'
+import { initData,initComputed,initMethods, initProps } from "./core"
+import { isValidArrayIndex,query,getOuterHTML,noop,warn } from './shared/util'
 import { defineReactive } from './core/observer'
-import {  compileToFunctions } from './core/compile/parser'
+import { compileToFunctions } from './core/compile/parser'
+import { initRender } from "./core/vdom/render";
 let uid = 0;
+
+
 export class MVVM{
     constructor(options){
         this.$options = options;
         this._uid = uid++;
         this._watchers = [];
+        this._staticTrees = null
+        this.$parent = options.parent;
         callHook(this,'beforeCreate');
         if(options.data){
             initData(this,options.data);
+        }
+
+        if(options.propsData){
+            initProps(this,options.propsData)
         }
 
         if(options.methods){
@@ -36,8 +45,15 @@ export class MVVM{
      * @param {*} el 
      */
     $mount(el){
-        let options = this.$options;
-        this.$el = el = el && query(el);
+        const vm = this;
+        let options = vm.$options;
+        vm.$el = el = el && query(el);
+        if (el === document.body || el === document.documentElement) {
+            warn(
+              `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
+            )
+            return this
+        }
         if(!options.render){
             let template = options.template;
             if(template){
@@ -55,12 +71,30 @@ export class MVVM{
             }
 
             if(template){
-                const render = compileToFunctions(template,this);
+                const { render,staticRenderFns } = compileToFunctions(template,vm);
                 options.render = render;
+                options.staticRenderFns = staticRenderFns;
             }
         }
 
-        callHook(this,'beforeMount');
+        callHook(vm,'beforeMount');
+
+        let updateComponent;
+        updateComponent = () => {
+            vm._update(vm._render())
+        }
+
+        new Watcher(vm,updateComponent,noop,{
+            before () {
+                if (vm._isMounted) {
+                    callHook(vm,'beforeUpdate')
+                }
+            }
+        },true)
+
+        vm._isMounted = true;
+        callHook(vm,'mounted')
+
     }
     /**
      * 
@@ -115,9 +149,26 @@ export class MVVM{
         delete target[key];
         ob && ob.dep.notify();
     }
+    $emit(event,...args){
+        const vm = this;
+        let cbs = vm._events[event];
+        if(cbs){
+            for(let i = 0,l = cbs.length;i < l;i++){
+                try{
+                    cbs[i].call(vm,...args);
+                } catch (e) {
+                    warn(`event handler error for ${event}`)
+                }
+
+            }
+        }
+        return vm;
+    }
     
 
 }
+
+initRender(MVVM);
 
 window.MVVM = MVVM;
 
@@ -126,7 +177,7 @@ window.MVVM = MVVM;
  * @param {*} vm 
  * @param {*} hook 
  */
-function callHook(vm,hook){
+export function callHook(vm,hook){
     let handler = vm.$options[hook];
     if(handler){
         handler.call(vm)

@@ -12,7 +12,7 @@ function markStaticRoots(node) {
         if (
             node.static &&
             node.children &&
-            !(node.children.length <= 1 && node.children[0].type === 3)
+            !(node.children.length === 1 && node.children[0].type === 3)
         ) {
             node.staticRoot = true;
             return;
@@ -30,7 +30,6 @@ function markStaticRoots(node) {
             }
         }
     }
-
 }
 
 function markStatic(node) {

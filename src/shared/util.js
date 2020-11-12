@@ -5,9 +5,9 @@ export function makeMap(str, expectsLowerCase) {
     for (let i = 0; i < list.length; i++) {
         map[list[i]] = true
     }
-    return expectsLowerCase
-        ? val => map[val.toLowerCase()]
-        : val => map[val]
+    return expectsLowerCase ?
+        val => map[val.toLowerCase()] :
+        val => map[val]
 }
 export const isHTMLTag = makeMap(
     'html,body,base,head,link,meta,style,title,' +
@@ -34,26 +34,32 @@ export const isStaticKey = makeMap(
     'type,tag,attrsList,attrsMap,plain,parent,children,attrs,staticClass,staticStyle'
 )
 
+export const isNativeEvent = makeMap(
+    `abort,blur,change,click,dbclick,error,focus,keydown,keypress,` + 
+    `keyup,load,mousedown,mousemove,mouseout,mouseover,mouseup,reset` + 
+    `resize,select,submit,unload,input`
+)
+
 
 
 /**
  * 利用闭包可以将普通函数转换为带缓存的函数
  * @param {*} fn 
  */
-export function cached(fn){
+export function cached(fn) {
     const cache = Object.create(null);
-    return function cachedFn(str){
+    return function cachedFn(str) {
         const hit = cache[str];
         return hit || (cache[str] = fn(str));
     }
 
 }
 
-export function noop() { }
+export function noop() {}
 export function isFunction(obj) {
     return typeof obj === 'function'
 }
-export function isObject(val){
+export function isObject(val) {
     return (val !== null) && typeof val === 'object';
 }
 const bailRE = /[^\w.$]/
@@ -72,23 +78,23 @@ export function parsePath(path) {
 }
 
 export const hasPro = '__proto__' in {}
-export function warn(msg){
+export function warn(msg) {
     console.error(`[MVVM warn]: ${msg}`)
 }
-export function def(obj,key,val,enumerable){
-    Object.defineProperty(obj,key,{
-        value:val,
+export function def(obj, key, val, enumerable) {
+    Object.defineProperty(obj, key, {
+        value: val,
         enumerable,
         writable: true,
         configurable: true
     })
 }
 
-export function hasOwn(target,key){
+export function hasOwn(target, key) {
     return target.hasOwnProperty(key);
 }
 
-export function isValidArrayIndex(array,index){
+export function isValidArrayIndex(array, index) {
     return index >= 0 && (index < array.length)
 }
 
@@ -97,37 +103,61 @@ export function isPlainObject(obj) {
     return Object.prototype.toString.call(obj) === OBJECT_STRING
 }
 
-export function bind(context,cb){
+export function bind(context, cb) {
     return cb.bind(context);
 }
 
-export function query(el){
-    if (typeof el === 'string'){
+export function query(el) {
+    if (typeof el === 'string') {
         const selector = el;
         el = document.querySelector(el);
-        if(!el){
+        if (!el) {
             return document.createElement('div');
         }
     }
     return el;
 }
 
-export const idToTemplate = cached(function(id){
+export const idToTemplate = cached(function (id) {
     let el = query(id);
     return el && el.innerHTML;
 })
 
-export function getOuterHTML(el){
-    if(el.outerHTML){
+export function getOuterHTML(el) {
+    if (el.outerHTML) {
         return el.outerHTML;
-    }else{ // 兼容outerHTML不能使用的情况
+    } else { // 兼容outerHTML不能使用的情况
         let container = document.createElement('div');
         container.appendChild(el.cloneNode(true));
         return container.innerHTML;
     }
 }
 
-export function extend(target,other){
-    Object.assign(target,other)
+export function extend(target, other) {
+    Object.assign(target, other)
+}
+
+export function toNumber(val) {
+    const n = parseFloat(val);
+    return isNaN(n) ? val : n;
+}
+
+export function looseEqual(a, b) {
+    return a === b;
+}
+
+export function looseIndexOf(arr, val) {
+    for (let i = 0; i < arr.length; i++) {
+        if (looseEqual(arr[i], val)) return i
+    }
+    return -1
+}
+
+export function toString(val) {
+    return val == null ?
+        '' :
+        typeof val === 'object' ?
+        JSON.stringify(val, null, 2) :
+        String(val)
 }
 

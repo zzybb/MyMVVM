@@ -7,5 +7,5 @@ export default function genData(el){
         data += `style:(${el.styleBinding}),`
     }
     return data;
-
 }
+

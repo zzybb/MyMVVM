@@ -30,6 +30,16 @@ export function initData(vm,data){
     observe(data);
 }
 
+export function initProps(vm,data){
+    vm.$prop = data;
+    const keys = Object.keys(data);
+    let i = keys.length;
+    while(i--){
+        proxy(vm,"$prop",keys[i]);
+    }
+    observe(data);
+}
+
 export function initComputed(vm,computed){
     let watchers = vm._computedWatchers = Object.create(null);
     const keys = Object.keys(computed);
@@ -94,6 +104,8 @@ export function initMethods(vm,methods){
         vm[key] = methods[key] ? bind(vm,methods[key]) : noop;
     }
 }
+
+
 
 /**
  * 会将computed属性设置到vm实例上，所以可以直接vm.xx访问，并且设置

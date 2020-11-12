@@ -21,9 +21,9 @@ class CodegenState {
 export function generate(ast) {
     let state = new CodegenState();
     let code = ast ? genElement(ast, state) : '_c("div")';
-
+    console.log(code);
     return {
-        render: `with(this){return ${code}}`,
+        render: createFunction(`with(this){return ${code}}`),
         staticRenderFns: state.staticRenderFns
     }
 }
@@ -66,8 +66,18 @@ function genElement(el, state) {
  */
 function genStatic(el, state) {
     el.staticProcessed = true;
-    state.staticRenderFns.push(`with(this){ return ${genElement(el,state) }}`);
+    const code = `with(this){ return ${genElement(el,state) }}`;
+    console.log(code)
+    state.staticRenderFns.push(createFunction(code));
     return `_m(${state.staticRenderFns.length - 1})`;
+}
+
+function createFunction(code) {
+    try {
+        return new Function(code)
+    } catch (err) {
+        return noop
+    }
 }
 
 /**
@@ -190,7 +200,7 @@ function genData(el, state) {
     if (dirs) data += dirs + ',';
 
     if (el.key) {
-        data += `key:${el.key}`
+        data += `key:${el.key},`
     }
 
     if (el.component) {
@@ -262,7 +272,7 @@ function genDirectives(el, state) {
         if (gen) {
             needRuntime = !!gen(el, dir);
         }
-        // m-model需要拼接上render,其他指令不用
+        // m-model,m-show需要拼接上render,其他指令不用
         if (needRuntime) {
             hasRuntime = true;
             res += `{name:${JSON.stringify(dir.name)},rawName:${JSON.stringify(dir.rawName)}` + `${dir.value ? 

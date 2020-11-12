@@ -1,54 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="../dist/MVVM.js"></script>
 </head>
+
 <body>
-    <div id="app" :a="11" b="2" m-html="">
-        <test m-model="num">
-            <strong></strong>
-            <span></span>
-            <input m-model="num" :type="type">
-        </test>
+    <div id="app">
+        <div :style="{ fontSize: postFontSize + 'em' }" @test="handler">
+            <blog-post m-for="post in posts" :key="post.id" :post="post" @enlarge-text="postFontSize += 0.1">
+            </blog-post>
+        </div>
+        <input m-model="name">
+        <p>{{ name }}</p>
+        <p m-show="isShow">777</p>
+
     </div>
     <script>
         let vm = new MVVM({
-            el:'#app',
-            data:{
-                name:'zzy',
-                obj:{
-                    name:'gyy',
-                    obj2:{
-                        name:'zzy'
-                    }
-
-                },
-                list:[1,2,{name:'zzy'},4,5],
-                type:'radio'
-            },
-            computed:{
-                all(){
-                    return this.name + this.obj.name;
+            el: '#app',
+            components: {
+                'blog-post': {
+                    props: ['post'],
+                    template: `
+                    <div class="blog-post">
+                      <h3>{{ post.title }}</h3>
+                      <button @click="$emit('enlarge-text')">
+                        Enlarge text
+                      </button>
+                      <div m-html="post.content"></div>
+                    </div>
+                  `
                 }
             },
-            methods:{
-                getSome(a){
-                    console.log(this.name + a);
+            data: {
+                posts: [{
+                    id: 1,
+                    title: "tite1",
+                    content: "aaaaaaaa"
+                }],
+                postFontSize: 1,
+                num: 5,
+                isShow: false,
+                name: "zzy",
+                list: ["1", "2", 3, 4, 5],
+                isActive: true,
+                hasError: false,
+                activeClass: 'active',
+                errorClass: 'text-danger',
+                isActive: true,
+                message: "",
+                checked: false,
+                checkedNames: ["Jack"],
+                pick: '',
+                a: 'zzy'
+            },
+            methods: {
+                handler() {
+                    console.log(this.name)
+
                 }
             }
         })
-        let obj = {
-
-        }
-        console.log(obj.name != null)
-
-
 
         
     </script>
-    
+
+
+
 </body>
+
 </html>

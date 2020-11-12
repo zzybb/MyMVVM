@@ -143,7 +143,12 @@ export function compileToFunctions(template, vm) {
     })
     optimize(root)
     let code = generate(root);
-    console.log(code,root)
+    console.log(root)
+    return {
+        root,
+        render: code.render,
+        staticRenderFns: code.staticRenderFns
+    }
 }
 
 function processFor(el) {

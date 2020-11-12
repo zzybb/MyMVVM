@@ -1,15 +1,21 @@
 import { isObject, parsePath,warn } from '../../shared/util'
 import { Dep,popTarget,pushTarget } from './Dep';
+import { queueWatcher } from './scheduler';
 let uid = 0;
 export class Watcher{
-    constructor(vm,expOrFn,cb,options){
+    constructor(vm,expOrFn,cb,options,isRenderWatcher){
         this.vm = vm;
         this.deps = [];
         this.depIds = new Set();
-        this.expression = expOrFn.toString()
+        this.expression = expOrFn.toString();
+        if (isRenderWatcher) {
+            vm._watcher = this
+        }
         if(options){
             this.deep = !!options.deep;
             this.dirty = this.lazy = !!options.lazy
+            this.before = options.before;
+            this.sync = !!options.sync;
         }else{
             this.deep = this.dirty = this.lazy = false;
         }
@@ -27,16 +33,12 @@ export class Watcher{
     get(){
         pushTarget(this);
         let value;
-        try{
-            value = this.getter.call(vm,vm);
+        
+            value = this.getter.call(this.vm,this.vm);
             
             if(this.deep){
                 traverse(value)
             }
-            
-        }catch(e){
-            warn(`watcher callback is error: ${e}`)
-        }
         popTarget();
         return value;
     }
@@ -58,8 +60,11 @@ export class Watcher{
     update(){
         if(this.lazy){
             this.dirty = true;
-        }else{
+        }else if(this.sync){
             this.run();
+        }else{
+            
+            queueWatcher(this);
         }
     }
     run(){
