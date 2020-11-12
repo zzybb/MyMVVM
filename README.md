@@ -17,9 +17,14 @@ beforeCreat,created,beforeMount,mounted,beforeUpdate,updated,beforeDestroy,desto
 $mount.$on,$emit,$off,$destory,$nextTick
 ### 全局API
 MVVM.delete,MVVM.compile,MVVM.set,MVVM.nextTick.
-### 组件系统以及事件相关
 
+
+### 组件系统以及事件相关
 只支持局部组件注册，props父传子以及组件上自定义事件
+
+### 指令系统
+支持m-on(@),m-bind(:),m-model(非组件)，m-for,m-html,m-text,m-show,m-if/m-else-if/m-else
+
 ### 虚拟DOM以及diff算法相关优化
 虚拟DOM对于每一个元素都有相应的标记，孩子节点也有标记，用于快速对比，使用位运算加速对比过程。
 
