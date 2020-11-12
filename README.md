@@ -1,5 +1,5 @@
 # MVVM
- MVVM是一个类Vue的框架，以学习vue源码为目的的通过阅读vue2.5.1以及Vue3渲染器相关源码完成。API设计均与Vue2一样。
+ MVVM是一个类Vue的框架，以学习vue源码为目的的去通过阅读vue2.5.1以及Vue3渲染器相关源码完成。API设计均与Vue2一样。
 ### 如何开始
 1.在html文件引入dist/MVVM.js。
 2.新建MVVM实例。
@@ -17,6 +17,9 @@ beforeCreat,created,beforeMount,mounted,beforeUpdate,updated,beforeDestroy,desto
 $mount.$on,$emit,$off,$destory,$nextTick
 ### 全局API
 MVVM.delete,MVVM.compile,MVVM.set,MVVM.nextTick.
+### 组件系统以及事件相关
+
+只支持局部组件注册，props父传子以及组件上自定义事件
 ### 虚拟DOM以及diff算法相关优化
 虚拟DOM对于每一个元素都有相应的标记，孩子节点也有标记，用于快速对比，使用位运算加速对比过程。
 
