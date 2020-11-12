@@ -1,6 +1,6 @@
 import { Watcher } from "./core/observer/watcher";
 import { initData,initComputed,initMethods, initProps } from "./core"
-import { isValidArrayIndex,query,getOuterHTML,noop,warn } from './shared/util'
+import { isValidArrayIndex,query,getOuterHTML,noop,warn,remove } from './shared/util'
 import { defineReactive } from './core/observer'
 import { compileToFunctions } from './core/compile/parser'
 import { initRender } from "./core/vdom/render";
@@ -12,7 +12,8 @@ export class MVVM{
         this.$options = options;
         this._uid = uid++;
         this._watchers = [];
-        this._staticTrees = null
+        this._staticTrees = null;
+        this._events = Object.create(null);
         this.$parent = options.parent;
         callHook(this,'beforeCreate');
         if(options.data){
@@ -164,8 +165,80 @@ export class MVVM{
         }
         return vm;
     }
-    
+    $forceUpdate(){
+        const vm = this;
+        if (vm._watcher){
+            vm._watcher.update();
+        }
+    }
+    $destroy(){
+        const vm = this;
+        if (vm._isBeingDestroyed){
+            return;
+        }
+        callHook(vm,'beforeDestroy');
+        vm._isBeingDestroyed = true;
+        const parent = vm.$parent;
+        if (parent && !parent._isBeingDestroyed){
+            remove(parent.$children,vm)
+        }
+        if(vm._watcher){
+            vm._watcher.teardown();
+        }
+        let i = vm._watchers.length;
+        while(i--){
+            vm._watchers[i].teardown();
+        }
+        vm._update(vm._vnode,true);
+        vm._isDestroyed = true;
+        callHook(vm,'destroyed');
+        vm.$off();
+    }
+    $on(event,callback){
+        const vm = this;
+        if(Array.isArray(event)){
+            for(let i = 0,l = event.length;i < l;i++){
+                this.$on(event[i],callback);
+            }
+        }else{
+            (vm._events[event] || (vm._events[event] = [])).push(callback);
+        }
+        return vm;
+    }
+    $off(...arg){
+        const vm = this;
+        if(!arg.length){
+            vm._events = Object.create(null);
+            return vm;
+        }
 
+        const event = arg[0];
+        const fn = arg[1];
+        const cbs = vm._events[event];
+        if(!cbs){
+            return vm;
+        }
+        if(arg.length === 1){
+            vm._events[event] = null;
+            return vm;
+        }
+        if(fn){
+            const cbs = vm._events[event];
+            let cb;
+            let i = cbs.length;
+            while(i--){
+                cb = cbs[i];
+                if(cb === fn || cb.fn === fn){
+                    cbs.splice(i,1);
+                    break;
+                }
+            }
+            
+        }
+        return vm;
+
+    }
+    
 }
 
 initRender(MVVM);

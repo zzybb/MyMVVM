@@ -35,11 +35,19 @@ export const isStaticKey = makeMap(
 )
 
 export const isNativeEvent = makeMap(
-    `abort,blur,change,click,dbclick,error,focus,keydown,keypress,` + 
-    `keyup,load,mousedown,mousemove,mouseout,mouseover,mouseup,reset` + 
+    `abort,blur,change,click,dbclick,error,focus,keydown,keypress,` +
+    `keyup,load,mousedown,mousemove,mouseout,mouseover,mouseup,reset` +
     `resize,select,submit,unload,input`
 )
 
+export function remove(arr, item) {
+    if (arr.length) {
+        const index = arr.indexOf(item);
+        if (index > -1) {
+            return arr.splice(index, 1);
+        }
+    }
+}
 
 
 /**
@@ -160,4 +168,3 @@ export function toString(val) {
         JSON.stringify(val, null, 2) :
         String(val)
 }
-

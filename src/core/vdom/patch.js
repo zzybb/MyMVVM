@@ -73,7 +73,7 @@ function patchElement(vm, prevVNode, nextVNode, container) {
         // 将不存在于新VNodeData中的数据删除
         for (let key in prevData) {
             const prevValue = prevData[key];
-            if ((key !== 'staticClass' && key !== 'staticStyle') && prevValue && !nextData.hasOwnProperty(key)) {
+            if ((key !== 'staticClass' && key !== 'staticStyle') && prevValue && (nextData && !nextData.hasOwnProperty(key))) {
                 patchData(vm, el, key, prevValue, null)
             }
         }

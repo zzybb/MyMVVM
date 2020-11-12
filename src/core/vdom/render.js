@@ -23,8 +23,7 @@ import {
     warn
 } from '../../shared/util'
 export function initRender(MVVM) {
-    MVVM.prototype._update = function (vnode) {
-        console.log("6")
+    MVVM.prototype._update = function (vnode,hy) {
         const vm = this;
         let container = vm.$el;
         const prevVNode = vm._vnode;
@@ -52,7 +51,7 @@ export function initRender(MVVM) {
             
             if (vnode) {
                 
-                patch(vm,prevVNode, vnode, container);
+                patch(vm,prevVNode, hy ? null : vnode, container);
                 vm._vnode = vnode;
                 vm.$el = vnode.el;
             } else {
