@@ -19,11 +19,18 @@
         <p m-if="isShow">777</p>
         <button @click="changeList">change</button>
         <test m-for="item in list" :key="item.id" :num="item.id"></test>
+        
 
     </div>
     <script>
         let vm = new MVVM({
             el: '#app',
+            computed:{
+                'allNum'(){
+                    return this.name + this.a
+                }
+
+            },
             components: {
                 'blog-post': {
                     props: ['post'],

@@ -78,13 +78,16 @@ export class Watcher{
         this.value = this.get();
         this.cb.call(this.vm,this.value,oldValue);
     }
+    /**
+     * 针对计算属性进行求值的函数，需要设置dirty值
+     */
     evaluate(){
         this.value = this.get();
         this.dirty = false;
     }
     depend(){
         for(let i = 0,l = this.deps.length;i < l;i++){
-            deps[i].addSub(Dep.target);
+            this.deps[i].addSub(Dep.target);
         }
     }
     teardown(){
