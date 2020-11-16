@@ -1,6 +1,7 @@
 import {
     nextTick
 } from './next-tick'
+import { callHook } from '../../MVVM_entry'
 let has = {}
 let queue = [];
 let flushing = false;

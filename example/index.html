@@ -16,7 +16,9 @@
         </div>
         <input m-model="name">
         <p>{{ name }}</p>
-        <p m-show="isShow">777</p>
+        <p m-if="isShow">777</p>
+        <button @click="changeList">change</button>
+        <test m-for="item in list" :key="item.id" :num="item.id"></test>
 
     </div>
     <script>
@@ -34,9 +36,20 @@
                       <div m-html="post.content"></div>
                     </div>
                   `
+                },
+                'test': {
+                    props: ['num'],
+                    template: `<p>{{ num }}</p>`
                 }
             },
             data: {
+                list: [{
+                    id: 1
+                }, {
+                    id: 2
+                }, {
+                    id: 3
+                }],
                 posts: [{
                     id: 1,
                     title: "tite1",
@@ -46,7 +59,6 @@
                 num: 5,
                 isShow: false,
                 name: "zzy",
-                list: ["1", "2", 3, 4, 5],
                 isActive: true,
                 hasError: false,
                 activeClass: 'active',
@@ -61,7 +73,10 @@
             methods: {
                 handler() {
                     console.log(this.name)
-
+                },
+                changeList() {
+                    this.isShow = true;
+                    this.list = [{id:3},{id:2},{id:10},{id:18},{id:1}]
                 }
             }
         })

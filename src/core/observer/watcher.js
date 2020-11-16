@@ -33,8 +33,13 @@ export class Watcher{
     get(){
         pushTarget(this);
         let value;
-        
-            value = this.getter.call(this.vm,this.vm);
+            try{
+                value = this.getter.call(this.vm,this.vm);
+            }catch (e) {
+                warn(`watcher callback run is error`)
+
+            }
+            
             
             if(this.deep){
                 traverse(value)

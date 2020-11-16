@@ -143,7 +143,7 @@ export function compileToFunctions(template, vm) {
     })
     optimize(root)
     let code = generate(root);
-    console.log(root)
+    
     return {
         root,
         render: code.render,

@@ -21,7 +21,7 @@ class CodegenState {
 export function generate(ast) {
     let state = new CodegenState();
     let code = ast ? genElement(ast, state) : '_c("div")';
-    console.log(code);
+    
     return {
         render: createFunction(`with(this){return ${code}}`),
         staticRenderFns: state.staticRenderFns
@@ -67,7 +67,7 @@ function genElement(el, state) {
 function genStatic(el, state) {
     el.staticProcessed = true;
     const code = `with(this){ return ${genElement(el,state) }}`;
-    console.log(code)
+    
     state.staticRenderFns.push(createFunction(code));
     return `_m(${state.staticRenderFns.length - 1})`;
 }

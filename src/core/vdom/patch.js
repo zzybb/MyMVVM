@@ -34,13 +34,14 @@ export function patch(vm, prevVNode, nextVNode, container) {
 
 function replaceVNode(vm, prevVNode, nextVNode, container) {
 
+    
+    // if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
+    //     // 类型为有状态组件的 VNode，其 children 属性被用来存储组件实例对象
+    //     const instance = prevVNode.children
+    //     callHook(instance, 'unmounted')
+    // }
+    mount(vm, nextVNode, container,prevVNode.el);
     container.removeChild(prevVNode.el);
-    if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
-        // 类型为有状态组件的 VNode，其 children 属性被用来存储组件实例对象
-        const instance = prevVNode.children
-        callHook(instance, 'unmounted')
-    }
-    mount(vm, nextVNode, container);
 }
 
 /**
@@ -233,7 +234,8 @@ function patchChildren(
                     //     }
                     //     mount(vm, nextChildren[i], container)
                     // }
-                    vueDiff(vm, prevChildren, nextChildren, container)
+                    //vueDiff(vm, prevChildren, nextChildren, container)
+                    infernoDiff(vm, prevChildren, nextChildren, container)
 
                     break;
             }
@@ -300,6 +302,7 @@ function reactDiff(vm, prevChildren, nextChildren, container) {
  * @param {*} container 
  */
 function vueDiff(vm, prevChildren, nextChildren, container) {
+    
     let oldStartIdx = 0;
     let oldEndIdx = prevChildren.length - 1;
     let newStartIdx = 0;
@@ -308,6 +311,11 @@ function vueDiff(vm, prevChildren, nextChildren, container) {
     let oldEndVNode = prevChildren[oldEndIdx];
     let newStartVNode = nextChildren[newStartIdx];
     let newEndVNode = nextChildren[newEndIdx];
+    let oldMap = {};
+
+    for (let i = oldStartIdx; i <= oldEndIdx; i++) {
+        oldMap[prevChildren[i].key] = i
+    }
 
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
         if (!oldStartVNode) {
@@ -343,15 +351,15 @@ function vueDiff(vm, prevChildren, nextChildren, container) {
             oldEndVNode = prevChildren[--oldEndIdx];
             newStartVNode = nextChildren[++newStartIdx];
         } else {
-            const idxInOld = prevChildren.findIndex(
-                node => node.key === newStartVNode.key
-            )
-            if (idxInOld >= 0) {
+
+            const idxInOld = oldMap[newStartVNode.key];
+            if (idxInOld) {
                 const vnodeToMove = prevChildren[idxInOld];
                 patch(vm, vnodeToMove, newStartVNode, container);
                 container.insertBefore(vnodeToMove.el, oldStartVNode.el);
                 prevChildren[idxInOld] = undefined;
             } else {
+                
                 mount(vm, newStartVNode, container, oldStartVNode.el)
             }
             newStartVNode = nextChildren[++newStartIdx];
@@ -360,14 +368,17 @@ function vueDiff(vm, prevChildren, nextChildren, container) {
 
 
     if (oldEndIdx < oldStartIdx) {
+        
+
         // 添加新节点
         for (let i = newStartIdx; i <= newEndIdx; i++) {
             mount(vm, nextChildren[i], container, oldStartVNode ? oldStartVNode.el : null)
         }
     } else if (newEndIdx < newStartIdx) {
+        
         // 移除操作
         for (let i = oldStartIdx; i <= oldEndIdx; i++) {
-            container.removeChild(prevChildren[i].el)
+            prevChildren[i] ? container.removeChild(prevChildren[i].el) : ''
         }
     }
 }
@@ -380,47 +391,210 @@ function vueDiff(vm, prevChildren, nextChildren, container) {
  * @param {*} container 
  */
 function infernoDiff(vm, prevChildren, nextChildren, container) {
+
     let j = 0;
     let prevVNode = prevChildren[j];
     let nextVNode = nextChildren[j];
-    while (prevVNode.key === nextVNode.key) {
-        patch(vm, prevVNode, nextVNode, container);
-        j++;
-        prevVNode = prevChildren[j];
-        nextVNode = nextChildren[j];
-    }
     let prevEnd = prevChildren.length - 1;
     let nextEnd = nextChildren.length - 1;
-    prevVNode = prevChildren[prevEnd];
-    nextVNode = nextChildren[nextEnd];
-    while (prevVNode.key === nextVNode.key) {
-        patch(vm, prevVNode, nextVNode, container);
-        prevEnd--;
-        nextEnd--;
-        prevVNode = prevChildren[prevEnd];
-        nextVNode = nextChildren[nextEnd];
-    }
-    if (j > prevEnd && j <= nextEnd) {
-        const refNode = nextPos < nextChildren.length ? nextChildren[nextPos].el : null;
-        while (j <= nextEnd) {
-            mount(vm, nextChildren[j++], container, false, refNode);
+    outer: {
+        while (prevVNode.key === nextVNode.key) {
+            patch(vm, prevVNode, nextVNode, container);
+            j++;
+            if (j > prevEnd || j > nextEnd) {
+                break outer
+            }
+            prevVNode = prevChildren[j];
+            nextVNode = nextChildren[j];
         }
 
+        prevVNode = prevChildren[prevEnd];
+        nextVNode = nextChildren[nextEnd];
+        while (prevVNode.key === nextVNode.key) {
+            patch(vm, prevVNode, nextVNode, container);
+            prevEnd--;
+            nextEnd--;
+            if (j > prevEnd || j > nextEnd) {
+                break outer
+            }
+            prevVNode = prevChildren[prevEnd];
+            nextVNode = nextChildren[nextEnd];
+        }
     }
+
+    
     if (j > prevEnd && j <= nextEnd) {
+
         const nextPos = nextEnd + 1;
-        const refNode = nextPos < nextChildren.length ? nextChildren[nextPos].el : null;
+        const refNode =
+            nextPos < nextChildren.length ? nextChildren[nextPos].el : null;
         while (j <= nextEnd) {
-            mount(vm, nextChildren[j++], container, false, refNode);
+            mount(vm, nextChildren[j++], container, refNode);
         }
     } else if (j > nextEnd) {
         while (j <= prevEnd) {
             container.removeChild(prevChildren[j++].el);
         }
+    } else {
+        const nextLeft = nextEnd - j + 1;
+        const source = [];
+        for (let i = 0; i < nextLeft; i++) {
+            source.push(-1);
+        }
+        const prevStart = j;
+        const nextStart = j;
+        let moved = false
+        let pos = 0;
+
+        // 构建索引表
+        const keyIndex = {}
+        for (let i = nextStart; i <= nextEnd; i++) {
+            keyIndex[nextChildren[i].key] = i
+        }
+
+        // patched 表示已经更新过的节点数量。
+        let patched = 0;
+        for (let i = prevStart; i <= prevEnd; i++) {
+            const prevVNode = prevChildren[i];
+            if (patched < nextLeft) {
+                const k = keyIndex[prevVNode.key];
+                if (typeof k !== 'undefined') {
+                    nextVNode = nextChildren[k]
+                    // patch 更新
+                    patch(vm, prevVNode, nextVNode, container)
+                    patched++;
+                    // 更新 source 数组
+                    source[k - nextStart] = i
+                    // 判断是否需要移动
+                    if (k < pos) {
+                        moved = true
+                    } else {
+                        pos = k
+                    }
+
+
+                } else {
+                    // 没找到，说明旧节点在新 children 中已经不存在了，应该移除
+                    container.removeChild(prevVNode.el)
+                }
+
+            } else {
+                container.removeChild(prevNode.el);
+            }
+
+        }
+
+        if (moved) {
+            const seq = lis(source);
+            let j = seq.length - 1;
+            for (let i = nextLeft - 1; i >= 0; i--) {
+                if (source[i] === -1) {
+                    
+                    const pos = i + nextStart;
+                    const nextVNode = nextChildren[pos];
+                    const nextPos = pos + 1;
+                    mount(
+                        vm,
+                        nextVNode,
+                        container,
+                        nextPos < nextChildren.length ?
+                        nextChildren[nextPos].el :
+                        null
+                    )
+
+                } else if (i !== seq[j]) {
+                    // 说明该节点需要移动
+                    // 该节点在新 children 中的真实位置索引
+                    const pos = i + nextStart
+                    const nextVNode = nextChildren[pos]
+                    // 该节点下一个节点的位置索引
+                    const nextPos = pos + 1
+                    // 移动
+                    container.insertBefore(
+                        nextVNode.el,
+                        nextPos < nextChildren.length ?
+                        nextChildren[nextPos].el :
+                        null
+                    )
+
+                } else {
+                    // 当 i === seq[j] 时，说明该位置的节点不需要移动
+                    // 并让 j 指向下一个位置
+                    j--;
+                }
+            }
+        } else {
+            // 确定有没有要新添加的元素,即在没有需要移动元素的情况下，要遍历有没有要添加的新元素
+            for (let i = 0; i < source.length; i++) {
+                if (source[i] === -1) {
+                    const pos = i + nextStart
+                    const nextVNode = nextChildren[pos];
+                    const nextPos = pos + 1;
+                    mount(vm, nextVNode, container, nextPos < nextChildren.length ?
+                        nextChildren[nextPos].el : null)
+                }
+            }
+        }
     }
 
+}
 
+/**
+ * 求解最长递增子序列，返回数组形式的索引值
+ * @param {*} list 
+ */
+function lis(list) {
+    let dp = [1];
+    let ends = [list[0]];
+    let maxIndex = 0;
+    let maxNum = 1;
 
+    for (let i = 1, l = list.length; i < l; i++) {
+        let leftIndex = getLeftIndex(list[i]);
+        if(leftIndex === -1){
+            ends.push(list[i]);
+            dp[i] = ends.length;
+        }else{
+            ends[leftIndex] = list[i];
+            dp[i] = leftIndex + 1;
+        }
+        
+        if(dp[i] > maxNum){
+            maxNum = dp[i];
+            maxIndex = i;
+        }
+    }
+    
+
+    function generateLIS() {
+        let res = [maxIndex];
+        for (let i = maxIndex; i >= 0; i--) {
+            if ((list[i] < list[maxIndex]) && (dp[i] + 1 === dp[maxIndex])) {
+                res.unshift(i)
+                maxIndex = i;
+            }
+        }
+        return res;
+    }
+
+    function getLeftIndex(aim){
+        let left = 0;
+        let right = ends.length - 1;
+        let mid = 0;
+        while( left < right ){
+            mid = left + ((right - left) >> 1);
+            if(aim === ends[mid]){
+                return mid;
+            }else if(ends[mid] < aim){
+                left = mid + 1;
+            }else{
+                right = mid - 1;
+            }
+        }
+        return ends[left] >= aim ? left : -1;
+    }
+
+    return generateLIS();
 }
 
 function patchText(prevVNode, nextVNode) {
@@ -549,7 +723,7 @@ function setDirectives(vm, el, dirs) {
             const dir = dirs[i];
             if (dir.name === 'model') {
                 el.addEventListener('compositionstart', function ($event) {
-                    
+
                     $event.target.composing = true;
                 })
                 el.addEventListener('compositionend', function ($event) {
@@ -566,7 +740,7 @@ function setDirectives(vm, el, dirs) {
     }
 }
 
-function trigger(el,type){
+function trigger(el, type) {
     var e = document.createEvent('HTMLEvents');
     e.initEvent(type, true, true);
     el.dispatchEvent(e);

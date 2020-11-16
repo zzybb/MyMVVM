@@ -23,6 +23,11 @@ import {
     warn
 } from '../../shared/util'
 export function initRender(MVVM) {
+    /**
+     * 
+     * @param {*} vnode 
+     * @param {*} hy hy设置为true,代表卸载元素。
+     */
     MVVM.prototype._update = function (vnode,hy) {
         const vm = this;
         let container = vm.$el;
@@ -42,7 +47,7 @@ export function initRender(MVVM) {
             
             if (vnode) {
                 // 获取父节点,并替换成模板里的节点。
-                mount(vm, vnode, container);
+                mount(vm, vnode, container,vm.$options.refNode);
                 vm._vnode = vnode;
                 vm.$el = vnode.el;
             }
@@ -88,7 +93,7 @@ export function mount(vm, vnode, container,refNode) {
         mountElement(vm, vnode, container,refNode)
     } else if (flags & VNodeFlags.COMPONENT) {
         // 挂载组件
-        mountComponent(vm, vnode, container)
+        mountComponent(vm, vnode, container,refNode)
     } else if (flags & VNodeFlags.TEXT) {
         // 挂载纯文本
         mountText(vnode, container)

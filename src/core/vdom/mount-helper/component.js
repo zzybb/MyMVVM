@@ -10,19 +10,20 @@ import {
 import {
     setEvents
 } from '../patch'
-export function mountComponent(vm, vnode, container) {
+export function mountComponent(vm, vnode, container,refNode) {
     if (vnode.flags & VNodeFlags.COMPONENT_STATEFUL) {
-        mountStatefulComponent(vm, vnode, container);
+        mountStatefulComponent(vm, vnode, container,refNode);
     } else {
         //mountFunctionalComponent(vm, vnode, container);
     }
 }
 
 // 挂载有状态组件
-function mountStatefulComponent(vm, vnode, container) {
+function mountStatefulComponent(vm, vnode, container,refNode) {
     const componentOptions = vm.$options.components[vnode.tag];
     if (componentOptions) {
         componentOptions.el = container;
+        componentOptions.refNode = refNode;
 
         if (componentOptions.props) {
             // 设置props
