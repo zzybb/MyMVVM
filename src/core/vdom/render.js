@@ -81,7 +81,8 @@ export function initRender(MVVM) {
         }
         return vnode;
     }
-
+    
+    // 组装渲染函数方法
     installRenderHelper(MVVM.prototype);
 }
 

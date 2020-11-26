@@ -1,7 +1,9 @@
 import {
     nextTick
 } from './next-tick'
-import { callHook } from '../../MVVM_entry'
+import {
+    callHook
+} from '../../MVVM_entry'
 let has = {}
 let queue = [];
 let flushing = false;
@@ -13,9 +15,11 @@ export function queueWatcher(watcher) {
         has[id] = true;
         // flushing表示当队列没有执行更新时才会简单将观察者追加到队列的尾部。
         // 队列更新的时候也可能有东西入队伍的，比如计算属性
+        // 更新时加入队列需要保证队列任务的执行顺序
         if (!flushing) {
             queue.push(watcher);
         } else {
+            
 
         }
 

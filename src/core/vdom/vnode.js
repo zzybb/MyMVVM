@@ -18,16 +18,14 @@ export const VNodeFlags = {
     ELEMENT_HTML: 1,
     ELEMENT_SVG: 1 << 1,
     COMPONENT_STATEFUL_NORMAL: 1 << 2,
-    COMPONENT_STATEFUL_SHOULD_KEEP_ALIVE: 1 << 3,
-    COMPONENT_STATEFUL_KEPT_ALIVE: 1 << 4,
-    COMPONENT_FUNCTIONAL: 1 << 5,
-    TEXT: 1 << 6
+    COMPONENT_STATEFUL_KEPT_ALIVE: 1 << 3,
+    COMPONENT_FUNCTIONAL: 1 << 4,
+    TEXT: 1 << 5
 }
 
 VNodeFlags.ELEMENT = VNodeFlags.ELEMENT_HTML | VNodeFlags.ELEMENT_SVG;
 VNodeFlags.COMPONENT_STATEFUL =
     VNodeFlags.COMPONENT_STATEFUL_NORMAL |
-    VNodeFlags.COMPONENT_STATEFUL_SHOULD_KEEP_ALIVE |
     VNodeFlags.COMPONENT_STATEFUL_KEPT_ALIVE
 VNodeFlags.COMPONENT = VNodeFlags.COMPONENT_STATEFUL | VNodeFlags.COMPONENT_FUNCTIONAL
 
@@ -56,6 +54,7 @@ export function h(tag, data = null, children = null,ChildrenDeep) {
     if (isHTMLTag(tag)) {
         flags = tag === 'svg' ? VNodeFlags.ELEMENT_HTML : VNodeFlags.ELEMENT_SVG;
     } else if (tag === Fragment) {
+        // 没有设置这个属性
         flags = VNodeFlags.FRAGMENT;
     } else {
         if (tag !== null && !isHTMLTag(tag)) {

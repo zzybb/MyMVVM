@@ -25,8 +25,7 @@ export class Watcher{
         if(typeof expOrFn === 'function'){
             this.getter = expOrFn;
         }else{
-            this.getter = parsePath(expOrFn);
-            
+            this.getter = parsePath(expOrFn); 
         }
         this.value = this.lazy ? undefined : this.get();
     }
@@ -87,8 +86,9 @@ export class Watcher{
     }
     depend(){
         for(let i = 0,l = this.deps.length;i < l;i++){
-            this.deps[i].addSub(Dep.target);
+            this.deps[i].depend(Dep.target);
         }
+        
     }
     teardown(){
         for(let i = 0,l = this.deps.length;i < l;i++){

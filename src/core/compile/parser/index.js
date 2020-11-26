@@ -141,8 +141,10 @@ export function compileToFunctions(template, vm) {
             })
         }
     })
+    console.log(root)
     optimize(root)
     let code = generate(root);
+    console.log(code)
     
     return {
         root,

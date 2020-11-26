@@ -9,85 +9,45 @@
 </head>
 
 <body>
-    <div id="app">
-        <div :style="{ fontSize: postFontSize + 'em' }" @test="handler">
-            <blog-post m-for="post in posts" :key="post.id" :post="post" @enlarge-text="postFontSize += 0.1">
-            </blog-post>
-        </div>
-        <input m-model="name">
-        <p>{{ name }}</p>
-        <p m-if="isShow">777</p>
-        <button @click="changeList">change</button>
-        <test m-for="item in list" :key="item.id" :num="item.id"></test>
-        
 
+    <div id="blog-posts-events-demo">
+        <div>
+            <p>aaaa</p>
+        </div>
+        <div :style="{ fontSize: postFontSize + 'em' }">
+            <blog-post m-for="post in posts" m-bind:key="post.id" m-bind:post="post"
+                m-on:enlarge-text="postFontSize += 0.1"></blog-post>
+        </div>
     </div>
+
     <script>
         let vm = new MVVM({
-            el: '#app',
-            computed:{
-                'allNum'(){
-                    return this.name + this.a
-                }
-
+            el: '#blog-posts-events-demo',
+            data: {
+                posts: [{
+                    id: 0,
+                    title: 1,
+                    content: "zzy"
+                }],
+                postFontSize: 1
             },
             components: {
                 'blog-post': {
                     props: ['post'],
                     template: `
-                    <div class="blog-post">
-                      <h3>{{ post.title }}</h3>
-                      <button @click="$emit('enlarge-text')">
-                        Enlarge text
-                      </button>
-                      <div m-html="post.content"></div>
-                    </div>
-                  `
-                },
-                'test': {
-                    props: ['num'],
-                    template: `<p>{{ num }}</p>`
-                }
-            },
-            data: {
-                list: [{
-                    id: 1
-                }, {
-                    id: 2
-                }, {
-                    id: 3
-                }],
-                posts: [{
-                    id: 1,
-                    title: "tite1",
-                    content: "aaaaaaaa"
-                }],
-                postFontSize: 1,
-                num: 5,
-                isShow: false,
-                name: "zzy",
-                isActive: true,
-                hasError: false,
-                activeClass: 'active',
-                errorClass: 'text-danger',
-                isActive: true,
-                message: "",
-                checked: false,
-                checkedNames: ["Jack"],
-                pick: '',
-                a: 'zzy'
-            },
-            methods: {
-                handler() {
-                    console.log(this.name)
-                },
-                changeList() {
-                    this.isShow = true;
-                    this.list = [{id:3},{id:2},{id:10},{id:18},{id:1}]
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <button m-on:click="$emit('enlarge-text', 0.1)">
+        Enlarge text
+      </button>
+      <div m-html="post.content"></div>
+    </div>
+  `
                 }
             }
         })
 
+        
         
     </script>
 

@@ -243,56 +243,7 @@ function patchChildren(
     }
 }
 
-/**
- * react使用的diff算法
- */
-function reactDiff(vm, prevChildren, nextChildren, container) {
 
-    let lastIndex = 0;
-    for (let i = 0; i < nextChildren.length; i++) {
-        const nextVNode = nextChildren[i];
-        let j = 0,
-            find = false;
-        for (j; j < prevChildren.length; j++) {
-            const prevVNode = prevChildren[j];
-            if (nextVNode.key === prevVNode.key) {
-                find = true;
-                patch(vm, prevVNode, nextVNode, container);
-                if (j < lastIndex) {
-                    // refNode如果是null,则会自动将节点移动到container子节点列表得末尾
-                    const refNode = nextChildren[i - 1].el.nextSibling;
-                    container.insertBefore(prevVNode.el, refNode)
-                } else {
-                    lastIndex = j;
-                }
-                break;
-            }
-        }
-        if (!find) {
-            // 如果新节点是第一个，就插入到原第一个旧节点前面
-            // 不是第一个就插入到新节点中真实节点得前一个
-            const refNode =
-                i - 1 < 0 ?
-                prevChildren[0].el :
-                nextChildren[i - 1].el.nextSibling
-            mount(vm, nextVNode, container, false, refNode);
-
-        }
-
-    }
-
-    for (let i = 0; i < prevChildren.length; i++) {
-        const prevVNode = prevChildren[i]
-        // 拿着旧 VNode 去新 children 中寻找相同的节点
-        const has = nextChildren.find(
-            nextVNode => nextVNode.key === prevVNode.key
-        )
-        if (!has) {
-            // 如果没有找到相同的节点，则移除
-            container.removeChild(prevVNode.el)
-        }
-    }
-}
 
 /**
  * vue使用的diff算法
@@ -688,7 +639,7 @@ export function setEvents(vm, el, eventObj) {
     for (let i = 0, l = keys.length; i < l; i++) {
         const event = keys[i];
         if (!isNativeEvent(event)) {
-
+            
             if (!vm._events) {
                 vm._events = {}
             }
@@ -719,6 +670,7 @@ export function setEvents(vm, el, eventObj) {
  */
 function setDirectives(vm, el, dirs) {
     if (Array.isArray(dirs)) {
+        
         for (let i = 0; i < dirs.length; i++) {
             const dir = dirs[i];
             if (dir.name === 'model') {
