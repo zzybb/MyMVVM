@@ -35,9 +35,11 @@ export function initRender(MVVM) {
         const parent = vm.$parent;
         let parentElm = null;
         
+        
         if (prevVNode == null) {
             // 没有旧的VNode,只有新的VNode。第一次渲染
             if (!parent) {
+                // 没有parent说明是根节点渲染,拿到上级节点。
                 parentElm = container.parentNode;
                 parentElm && parentElm.removeChild(container);
                 container = parentElm;
@@ -53,13 +55,20 @@ export function initRender(MVVM) {
             }
         } else {
             // 有旧的VNode，也有新的VNode.
-            
-            if (vnode) {
-                
+            if (vnode) {    
                 patch(vm,prevVNode, hy ? null : vnode, container);
                 vm._vnode = vnode;
                 vm.$el = vnode.el;
             } else {
+                if (!parent) {
+                    // 没有parent说明是根节点渲染,拿到上级节点。
+                    parentElm = container.parentNode;
+                    parentElm && parentElm.removeChild(container);
+                    container = parentElm;
+                }else{
+                    container = parent;
+                }
+                
                 // 有旧的但没新的，说明应该全部移除
                 container.removeChild(prevVNode.el);
                 vm._vnode = null;

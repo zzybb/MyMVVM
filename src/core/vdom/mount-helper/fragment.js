@@ -1,3 +1,6 @@
+/**
+ * fragment未启用
+ */
 import {
     ChildrenFlags,
     createTextVNode

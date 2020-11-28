@@ -84,6 +84,60 @@ children节点
     |    |--util.js
     |----MVVM_entry.js         #MVVM入口文件
 
+# XSS防范相关
+以下总结了几种XSS相关的安全漏洞，包括本框架是如何对其进行防范的。
+- 在 HTML 中内嵌的文本中，恶意内容以 script 标签形成注入。
+   例子：
+```javascript
+
+    <div id="blog-posts-events-demo">
+            <p> {{ test }}</p>
+    </div>
+    let vm = new MVVM({
+        data:{
+           test:"<script>alert('XSS')<\/script>"
+        }
+    })
+```
+上面代码中，test可能是用户输入的内容，MVVM创建文本节点的方式为createTextNode,他不会将HTML标签解释执行，而是以纯文本
+的形式进行解释。
+- 在内联的 JavaScript 中，拼接的数据突破了原本的限制（字符串，变量，方法名等）。
+针对内联script标签，MVVM放弃解析这类标签，并给出该标签不能出现在模板中的控制台提示。
+
+- 在标签属性中，恶意内容包含引号，从而突破属性值的限制，注入其他属性或者标签。
+例子:
+
+```javascript
+<div id="blog-posts-events-demo">
+        <input type="text" :value="test">     
+</div>
+		
+let vm = new MVVM({
+	data:{
+		test: `"><script>alert('1')<\/script>`
+	}
+})
+```
+在一些实现中，会把value拼接到属性上，变成这样：
+```html
+<input type="text" value=""><script>alert('XSS');</script>">
+```
+这样就可以进行注入了。对于这类可能的漏洞，MVVM的m-bind绑定值(非实例属性绑定)是使用setArrtibute进行设置，该函数会将参数转换为字符串。
+
+- 在标签的 href、src 等属性中，包含 javascript: 等可执行代码。
+例子：
+```javascript
+<div id="blog-posts-events-demo">
+        <a href="javascript:alert('1')">aa</a>
+</div>
+```
+这种情况下依然会执行脚本，MVVM的做法是针对href以及src属性，判断值的开头是不是"javascript:"，如果是则控制台提示并替换为"#"。
+
+- 在 onload、onerror、onclick 等事件中，注入不受控制代码。
+
+- 在 style 属性和标签中，包含类似 background-image:url("javascript:..."); 的代码（新版本浏览器已经可以防范）。
+- 在 style 属性和标签中，包含类似 expression(...) 的 CSS 表达式代码（新版本浏览器已经可以防范）。
+
 
 # 参考目录
 

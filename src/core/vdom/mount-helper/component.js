@@ -42,29 +42,11 @@ function mountStatefulComponent(vm, vnode, container,refNode) {
 
         instance.$parent = vm;
         instance.$vnode = vnode;
+        // 外壳节点的children用来保存组件实例，方便patch的时候去拿
         vnode.children = instance;
         vnode.el = instance.$el;
 
         (vm.$children || (vm.$children = [])).push(instance);
-        // instance._update = function () {
-        //     if (instance._mounted) {
-        //         // 拿到旧的VNode
-        //         const prevVNode = instance.$vnode;
-        //         const nextVNode = (instance.$vnode = instance.render());
-        //         patch(prevVNode, nextVNode, prevVNode.el.parentNode);
-        //         instance.$el = vnode.el = instance.$vnode.el;
-        //     } else {
-        //         // 获取VNode
-        //         instance.$vnode = instance.render();
-        //         // 挂载
-        //         mount(instance, instance.$vnode, container);
-        //         // el属性值，vnode是组件的外壳vnode,$vnode是组件template生成的真实vnode
-        //         instance.$el = vnode.el = instance.$vnode.el;
-        //         // 调用mounted钩子
-        //         callHook(instance,'mounted')
-        //     }
-        // }
-        // instance._update()
 
     } else {
         warn(`component <${vnode.tag}> is not found`);

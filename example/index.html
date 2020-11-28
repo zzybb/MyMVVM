@@ -11,13 +11,8 @@
 <body>
 
     <div id="blog-posts-events-demo">
-        <div>
-            <p>aaaa</p>
-        </div>
-        <div :style="{ fontSize: postFontSize + 'em' }">
-            <blog-post m-for="post in posts" m-bind:key="post.id" m-bind:post="post"
-                m-on:enlarge-text="postFontSize += 0.1"></blog-post>
-        </div>
+        <a :src="test">aaa</a>
+        
     </div>
 
     <script>
@@ -29,26 +24,23 @@
                     title: 1,
                     content: "zzy"
                 }],
-                postFontSize: 1
+                postFontSize: 1,
+                isShow: true,
+                test: `javascript:alert('1')`
             },
             components: {
                 'blog-post': {
-                    props: ['post'],
-                    template: `
-    <div class="blog-post">
-      <h3>{{ post.title }}</h3>
-      <button m-on:click="$emit('enlarge-text', 0.1)">
-        Enlarge text
-      </button>
-      <div m-html="post.content"></div>
-    </div>
-  `
+                    template: `<p>aaaa</p>`
                 }
             }
         })
 
+
         
-        
+
+
+
+       
     </script>
 
 

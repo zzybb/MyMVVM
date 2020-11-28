@@ -34,7 +34,7 @@ export function mountElement(vm,vnode, container,refNode) {
             // 如果是单个子节点则调用 mount 函数挂载
             mount(vm,children, newElement)
         } else if (childFlags & ChildrenFlags.MULTIPLE_VNODES) {
-            // 如果是单多个子节点则遍历并调用 mount 函数挂载
+            // 如果是多个子节点则遍历并调用 mount 函数挂载
             for (let i = 0; i < children.length; i++) {
                 mount(vm,children[i], newElement)
             }

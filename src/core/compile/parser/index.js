@@ -23,10 +23,12 @@ import {
 import {
     extend,
     warn,
-    
+
 } from '../../../shared/util'
 
-import { generate } from '../codegen/index'
+import {
+    generate
+} from '../codegen/index'
 
 
 export const onRE = /^@|^m-on:/
@@ -52,6 +54,7 @@ export function createASTElement(tag, attrs, parent) {
 }
 
 function cloneASTElement(el) {
+    
     return createASTElement(el.tag, el.attrsList.slice(), el.parent);
 }
 
@@ -66,24 +69,18 @@ export function compileToFunctions(template, vm) {
         // 开始标签的回调函数
         start(tag, attrs, unary) {
             let element = createASTElement(tag, attrs, currentParent);
-
-
             // 前置处理
             element = preTransformNode(element) || element;
-            if(!element.processed){
+            if (!element.processed) {
                 processFor(element);
                 processIf(element);
                 processElement(element);
-
             }
-
 
             // 第一次进入确认根节点
             if (!root) {
                 root = element;
             }
-
-
 
             if (currentParent) {
                 // 处理if节点
@@ -104,8 +101,14 @@ export function compileToFunctions(template, vm) {
         },
         // 结束标签的回调
         end() {
+            
             stack.length -= 1;
             currentParent = stack[stack.length - 1];
+            // 不允许用户再template里写script标签，可能会有XSS注入
+            if(currentParent && currentParent.children[currentParent.children.length - 1].tag === 'script'){
+                warn(`can not use <script> in template,it is can not parse`)
+                currentParent.children.pop();
+            }
         },
         // 文本内容的回调函数
         chars(text) {
@@ -113,9 +116,9 @@ export function compileToFunctions(template, vm) {
                 return;
             }
             const children = currentParent.children;
-            text = text.trim() ? 
-                (isTextTag(currentParent) ? text : decodeHTMLCached(text))
-                : children.length ? ' ':''
+            text = text.trim() ?
+                (isTextTag(currentParent) ? text : decodeHTMLCached(text)) :
+                children.length ? ' ' : ''
 
             if (text) {
                 let expression;
@@ -125,7 +128,7 @@ export function compileToFunctions(template, vm) {
                         expression,
                         text
                     })
-                } else if(text !== ' ' || !children.length || children[children.length - 1].text !== ' '){
+                } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
                     children.push({
                         type: 3,
                         text,
@@ -145,7 +148,7 @@ export function compileToFunctions(template, vm) {
     optimize(root)
     let code = generate(root);
     console.log(code)
-    
+
     return {
         root,
         render: code.render,
@@ -321,7 +324,7 @@ function preTransformNode(el) {
         if (!map.type && !typeBinding && map['m-bind']) {
             typeBinding = `(${map['m-bind']}).type`
         }
-        
+
         if (typeBinding) {
             const ifCondition = getAndRemoveAttr(el, 'm-if', true);
             const ifConditionExtra = ifCondition ? `&&(${ifCondition})` : '';
@@ -359,9 +362,9 @@ function preTransformNode(el) {
                 block: branch2
             })
 
-            if (hasElse){
+            if (hasElse) {
                 branch0.else = true;
-            } else if (elseIfCondition){
+            } else if (elseIfCondition) {
                 branch0.elseif = elseIfCondition;
             }
 
@@ -389,26 +392,26 @@ function processElement(element) {
     processAttrs(element)
 }
 
-function transformNodeClass(el){
-    const staticClass = getAndRemoveAttr(el,'class');
+function transformNodeClass(el) {
+    const staticClass = getAndRemoveAttr(el, 'class');
     //处理静态class
-    if(staticClass){
+    if (staticClass) {
         el.staticClass = JSON.stringify(staticClass);
     }
     // 处理:class / m-bind:class
-    const classBinding = getBindingAttr(el,'class',false);
-    if (classBinding){
+    const classBinding = getBindingAttr(el, 'class', false);
+    if (classBinding) {
         el.classBinding = classBinding;
     }
 }
 
-function transformNodeStyle(el){
-    const staticStyle = getAndRemoveAttr(el,'style');
-    if(staticStyle){
+function transformNodeStyle(el) {
+    const staticStyle = getAndRemoveAttr(el, 'style');
+    if (staticStyle) {
         el.staticStyle = JSON.stringify(parseStyleText(staticStyle));
     }
-    const styleBinding = getBindingAttr(el,'style',false);
-    if (styleBinding){
+    const styleBinding = getBindingAttr(el, 'style', false);
+    if (styleBinding) {
         el.styleBinding = styleBinding
     }
 }
@@ -419,7 +422,7 @@ function transformNodeStyle(el){
  * 再分割分号形成key-value值
  * @param {*} style 
  */
-function parseStyleText(style){
+function parseStyleText(style) {
     const res = {};
 
     // 分号后面不能存在一个或多个非左括号后面跟右括号
@@ -427,10 +430,10 @@ function parseStyleText(style){
     // 上面式子中的分号就不会被分割
     const listDelimiter = /;(?![^(]*\))/g;
     const propertyDelimiter = /:(.+)/
-    style.split(listDelimiter).forEach(function(item){
-        if(item){
+    style.split(listDelimiter).forEach(function (item) {
+        if (item) {
             let tmp = item.split(propertyDelimiter);
-            tmp.length > 1 && (res[tmp[0].trim()] = tmp[1].trim()); 
+            tmp.length > 1 && (res[tmp[0].trim()] = tmp[1].trim());
         }
     })
     return res;

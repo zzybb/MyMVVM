@@ -45,8 +45,18 @@ ChildrenFlags.MULTIPLE_VNODES = ChildrenFlags.KEYED_VNODES | ChildrenFlags.NONE_
 
 export const Fragment = Symbol();
 
-export function h(tag, data = null, children = null,ChildrenDeep) {
-    if(Array.isArray(data)){
+/**
+ * h函数实际上就是_c，用于生产vnode
+ * childrenDeep用于表示有for循环，例如_c('div',{...},[_l(...),2)
+ * 这代表了_l会生产出一个数组，这样孩子数组就是嵌套的，需要扁平化处理。
+ * @param {*} tag 
+ * @param {*} data 
+ * @param {*} children 
+ * @param {*} ChildrenDeep 
+ */
+export function h(tag, data = null, children = null, ChildrenDeep) {
+    
+    if (Array.isArray(data)) {
         children = data;
         data = null
     }
@@ -59,20 +69,14 @@ export function h(tag, data = null, children = null,ChildrenDeep) {
     } else {
         if (tag !== null && !isHTMLTag(tag)) {
             flags = VNodeFlags.COMPONENT_STATEFUL_NORMAL
-        } else if (typeof tag === 'function') {
-            // Vue3 的类组件
-            flags = tag.prototype && tag.prototype.render ?
-                VNodeFlags.COMPONENT_STATEFUL_NORMAL // 有状态组件
-                :
-                VNodeFlags.COMPONENT_FUNCTIONAL // 函数式组件
         }
     }
 
     // 确定children类型
     let childFlags = null;
     if (Array.isArray(children)) {
-        if(ChildrenDeep){
-            // 数组扁平化
+        if (ChildrenDeep) {
+            // 数组扁平化,处理m-for的问题
             children = children.flat()
         }
         const length = children.length;
@@ -82,6 +86,7 @@ export function h(tag, data = null, children = null,ChildrenDeep) {
             childFlags = ChildrenFlags.SINGLE_VNODE
             children = children[0]
         } else {
+            // 只有多个子节点的情况下，才会为每个节点设置key
             childFlags = ChildrenFlags.KEYED_VNODES;
             children = normalizeVNodes(children);
         }
@@ -89,9 +94,6 @@ export function h(tag, data = null, children = null,ChildrenDeep) {
         childFlags = ChildrenFlags.NO_CHILDREN
     } else if (children._isVNode) {
         childFlags = ChildrenFlags.SINGLE_VNODE;
-    } else {
-        childFlags = ChildrenFlags.SINGLE_VNODE;
-        children = createTextVNode(children + '');
     }
 
 

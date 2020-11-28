@@ -32,9 +32,6 @@ export class MVVM{
             initComputed(this,options.computed);
         }
 
-        if(options.watch){
-            initWatch(this,options.watch);
-        }
         callHook(this,'created');
         if(options.el){
             this.$mount(options.el);
@@ -189,7 +186,7 @@ export class MVVM{
         while(i--){
             vm._watchers[i].teardown();
         }
-        vm._update(vm._vnode,true);
+        vm._update(null,true);
         vm._isDestroyed = true;
         callHook(vm,'destroyed');
         vm.$off();

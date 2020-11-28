@@ -27,19 +27,22 @@ export function patch(vm, prevVNode, nextVNode, container) {
         patchComponent(vm, prevVNode, nextVNode, container)
     } else if (nextFlags & VNodeFlags.TEXT) {
         patchText(prevVNode, nextVNode)
-    } else if (nextFlags & VNodeFlags.FRAGMENT) {
-        patchFragment(vm, prevVNode, nextVNode, container)
     }
+    // } else if (nextFlags & VNodeFlags.FRAGMENT) {
+    //     // todo : 暂时没有设计fragment!
+    //     patchFragment(vm, prevVNode, nextVNode, container)
+    // }
 }
 
+/**
+ * 将新节点挂载到旧节点前面(regNode就是旧节点即prevVNode.el)
+ * 移除掉旧节点
+ * @param {*} vm 
+ * @param {*} prevVNode 
+ * @param {*} nextVNode 
+ * @param {*} container 
+ */
 function replaceVNode(vm, prevVNode, nextVNode, container) {
-
-    
-    // if (prevVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
-    //     // 类型为有状态组件的 VNode，其 children 属性被用来存储组件实例对象
-    //     const instance = prevVNode.children
-    //     callHook(instance, 'unmounted')
-    // }
     mount(vm, nextVNode, container,prevVNode.el);
     container.removeChild(prevVNode.el);
 }
@@ -583,8 +586,9 @@ function patchComponent(vm, prevVNode, nextVNode, container) {
     } else if (nextVNode.flags & VNodeFlags.COMPONENT_STATEFUL_NORMAL) {
         // 获取组件实例
         const instance = (nextVNode.children = prevVNode.children);
-        updateProps(instance, nextVNode);
         nextVNode.el = prevVNode.el;
+        updateProps(instance, nextVNode);
+        
     }
 }
 
