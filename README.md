@@ -65,24 +65,6 @@ children节点
 #### diff算法
 采用[inferno](https://github.com/infernojs/inferno "inferno")的最长递增子序列diff算法。
 
-## 项目结构
-
-
-    |--dist
-    |--example
-    |--src
-    |----core
-    |    |--compile            #编译器代码
-    |    |    |--codegen       #将AST生成render函数
-    |    |    |--directives    #针对代码字符串生成中m-on,m-bind(m-bind=""),m-html等的处理代码
-    |    |    |--modules       #针对代码字符串生成中class,style的处理
-    |    |    |--parser        #模板编译成AST，静态优化AST代码
-    |    |--observer           #响应式系统代码
-    |    |--vdom               #虚拟DOM，渲染器代码
-    |    |--index.js           #初始化相关代码
-    |----shared                #全局工具函数库
-    |    |--util.js
-    |----MVVM_entry.js         #MVVM入口文件
 
 # XSS防范相关
 以下总结了几种XSS相关的安全漏洞，包括本框架是如何对其进行防范的。
@@ -137,6 +119,59 @@ let vm = new MVVM({
 
 - 在 style 属性和标签中，包含类似 background-image:url("javascript:..."); 的代码（新版本浏览器已经可以防范）。
 - 在 style 属性和标签中，包含类似 expression(...) 的 CSS 表达式代码（新版本浏览器已经可以防范）。
+
+## AST结构
+```javascript
+const AST = {
+	type,          //节点类型. 1为元素节点，2为有表达式的文本节点 3为纯文本节点和注释节点
+	tag,           //标签名称
+	attrsList,     //用于属性构建，会边构建边删除里面的项
+	attrsMap,      //跟attrsMap很像，但是他是键值对映射，并且不会减少
+	parent,        //指向父级AST节点
+	children,      //孩子AST节点
+	// 以下四种针对for循环的属性.eg.(item,index1,index2) in list
+	for,           //list
+	alias,         //item
+	iterator1,     //index1
+	iterator2,     //index2
+	IfCondition,   //type:Array.带if属性的属性值,最后会把后面带else-if,else的节点包括进来
+	else,
+	elseif,
+	key,           
+	component,     //带is属性的节点
+	staticClass,
+	classBinding,
+	staticStyle,
+	styleBinding,
+	hasBindings,   //判断该节点是否有使用m-bind指令,用于静态优化
+	props,         //用于绑定那些直接放在对象上的属性。1.属性指定了.props后缀  2.必须放在prop里面的属性（eg.input的value）
+	attrs,         //这些属性在生成真实节点时，会使用setAttribute来设置为节点属性
+	events,        //绑定了m-on就会放进这里
+	directions,    //保存指令信息：m-model,m-html,m-text
+	plain,         //是否纯净,如果是纯净的，代码生成阶段会跳过genData处理
+	static,
+	staticRoot
+}
+```
+
+## 项目结构
+
+
+    |--dist
+    |--example
+    |--src
+    |----core
+    |    |--compile            #编译器代码
+    |    |    |--codegen       #将AST生成render函数
+    |    |    |--directives    #针对代码字符串生成中m-on,m-bind(m-bind=""),m-html等的处理代码
+    |    |    |--modules       #针对代码字符串生成中class,style的处理
+    |    |    |--parser        #模板编译成AST，静态优化AST代码
+    |    |--observer           #响应式系统代码
+    |    |--vdom               #虚拟DOM，渲染器代码
+    |    |--index.js           #初始化相关代码
+    |----shared                #全局工具函数库
+    |    |--util.js
+    |----MVVM_entry.js         #MVVM入口文件
 
 
 # 参考目录

@@ -11,8 +11,16 @@
 <body>
 
     <div id="blog-posts-events-demo">
-        <a :src="test">aaa</a>
-        
+        <div id="example-6">
+            <select m-model="selected"  style="width: 50px;">
+              <option>A</option>
+              <option>B</option>
+              <option>C</option>
+            </select>
+            <br>
+            <span>Selected: {{ selected }}</span>
+          </div>
+
     </div>
 
     <script>
@@ -26,7 +34,9 @@
                 }],
                 postFontSize: 1,
                 isShow: true,
-                test: `javascript:alert('1')`
+                test: `javascript:alert('1')`,
+                toggle: "sss",
+                selected:""
             },
             components: {
                 'blog-post': {
@@ -35,12 +45,7 @@
             }
         })
 
-
         
-
-
-
-       
     </script>
 
 

@@ -144,10 +144,9 @@ export function compileToFunctions(template, vm) {
             })
         }
     })
-    console.log(root)
+    
     optimize(root)
     let code = generate(root);
-    console.log(code)
 
     return {
         root,
@@ -291,9 +290,6 @@ function processAttrs(el) {
                 name = name.replace(dirRE, '');
                 addDirective(el, name, rawName, value);
             }
-
-
-
 
         }
         // 对于非指令属性的处理,
