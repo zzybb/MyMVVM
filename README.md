@@ -1,5 +1,5 @@
 # MVVM
- MVVM是一个类Vue的框架，以学习vue源码为目的的去通过阅读vue2.5.1以及Vue3渲染器相关源码完成。API设计均与Vue2一样。
+ MVVM是一个类Vue的框架，以学习vue源码为目的的去通过阅读vue2.5.1相关源码完成。API设计均与Vue2一样。
 ### 如何开始
 1.在html文件引入dist/MVVM.js。
 2.新建MVVM实例。
